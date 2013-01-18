@@ -9,3 +9,7 @@ tags
 *.swp
 *.orig
 *.rej
+
+modules/exploits/multi/.DS_Store
+
+modules/exploits/multi/browser/.DS_Store
