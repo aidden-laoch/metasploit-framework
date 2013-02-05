@@ -23,8 +23,8 @@ class Metasploit3 < Msf::Auxiliary
 	end
 
 	def run
-
-		reporting_uri = "#{datastore['BADGER_URI']}target=#{datastore['BADGER_TGT']}&agent=msf_smtpimg"
+        uri = return_uri
+		reporting_uri = "#{uri}?target=#{datastore['BADGER_TGT']}&agent=msf_smtpimg"
 
 		html = "<html><head><title>#{datastore['SUBJECT']}</title></head><body>"
 		html << "#{datastore['BODY']}"

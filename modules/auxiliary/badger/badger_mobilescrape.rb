@@ -3,7 +3,6 @@ require 'msf/core/post/file'
 require 'rex'
 require 'rexml/document'
 require 'rex/parser/apple_backup_manifestdb'
-require 'plist'
 require 'cfpropertylist'
 
 class Metasploit3 < Msf::Post
@@ -143,7 +142,7 @@ class Metasploit3 < Msf::Post
 	def check_for_backups_win(bdir)
 		dirs = []
 		begin
-            #print_status("Checking for backups in #{bdir}")
+		#print_status("Checking for backups in #{bdir}")
 				session.fs.dir.foreach(bdir) do |dir|
 				if dir =~ /^[0-9a-f]{16}/i
 					print_status("Found #{bdir}\\#{dir}.chomp)")
@@ -181,8 +180,7 @@ class Metasploit3 < Msf::Post
 		acc="1.0"
 		pos = Position.new(lat,lon,acc)
 		comment = "Alarm Clock iPhone Backup @ Host: #{session.session_host}"
-		enc_comment = Rex::Text.encode_base64(comment)
-		report_cresults(pos,"msf_mobilescrape",enc_comment)
+		report_results(pos,"msf_mobilescrape",comment)
 		print_status("Location Found in Alarm Clock Free: #{lat},#{lon}")
 	end
 
