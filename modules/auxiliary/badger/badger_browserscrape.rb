@@ -24,7 +24,10 @@ class Metasploit3 < Msf::Post
 			history for geolocation artifacts.
 			},
 			'License'	=> MSF_LICENSE,
-			'Author'	=> ['v10l3nt'],
+			'Author'	=>
+				[ 'v10l3nt',
+				'bannedit' # Based on bannedit's firefox_creds.rb post/mutli/gather module
+				],
 				'Platform'      => [ 'unix', 'bsd', 'linux', 'osx', 'windows'],
 				'SessionTypes'  => [ 'meterpreter', 'shell' ]
 			))
@@ -208,60 +211,46 @@ class Metasploit3 < Msf::Post
 			return file_loc
 	end
 
-    def report_params(url,lat,lon)
-        acc = 1.0
-        pos = Position.new(lat,lon,acc)
-        print_status("URL contains GeoData: #{url}")
-        print_status("Coordinates: Lat=#{lat}, Lon=#{lon}")
-        comment = "#{url}"
-        report_results(pos,"msf_browserscrape",comment)
-    end
+	def report_params(url,lat,lon)
+		acc = 1.0
+		pos = Position.new(lat,lon,acc)
+		print_status("URL contains GeoData: #{url}")
+		print_status("Coordinates: Lat=#{lat}, Lon=#{lon}")
+		comment = "#{url}"
+		report_results(pos,"msf_browserscrape",comment)
+	end
     
 	def parse_geourl(url)
-		#if url =~ /([=-|=][0-9]+\.[0-9]+\%2C)/i
-		#	lat=$1.sub("=","").sub("%2C","")
-		#	if url =~/(\%2C[-]*[0-9]+\.[0-9]+)/i
-		#		lon=$1.sub("%2C","")
-		#		acc=1.0
-		#		print_status("Found Google Map: Lat=#{lat}, Lon=#{lon}")
-		#		pos = Position.new(lat,lon,acc)
-		#		comment = "#{url}"
-		#		report_cresults(pos,"msf_browserscrape",comment)
-		#	end
-		#end
-        
-        q = URI(url).query
-        if (q==nil)
-            return
-        end
-        params=CGI::parse(q)
-        
-        if params.has_key?("ll")
-            coords=params["ll"][0].split(",")
-            lat=coords[0]
-            lon=coords[1]
-            report_params(url,lat,lon)
-        elsif params.has_key?("geocode")
-            coords=params["geocode"][0].split(",")
-            lat=coords[0]
-            lon=coords[1]
-            report_params(url,lat,lon)
-        elsif params.has_key?("lat")
-            lat=params["lat"][0]
-            if params.has_key?("lon")
-                lon=params["lon"][0]
-                report_params(url,lat,lon)
-            elsif params.has_key?("lng")
-                lon=params["lng"][0]
-                report_params(url,lat,lon)
-            end
-        elsif params.has_key?("location")
-            coords=params["location"][0].split(",")
-            lat=coords[0]
-            lon=coords[1]
-            report_params(url,lat,lon)
-        end
-
+		q = URI(url).query
+		if (q==nil)
+			return
+		end
+		params=CGI::parse(q)        
+		if params.has_key?("ll")
+			coords=params["ll"][0].split(",")
+			lat=coords[0]
+			lon=coords[1]
+			report_params(url,lat,lon)
+		elsif params.has_key?("geocode")
+			coords=params["geocode"][0].split(",")
+			lat=coords[0]
+			lon=coords[1]
+			report_params(url,lat,lon)
+		elsif params.has_key?("lat")
+			lat=params["lat"][0]
+			if params.has_key?("lon")
+				lon=params["lon"][0]
+				report_params(url,lat,lon)
+			elsif params.has_key?("lng")
+				lon=params["lng"][0]
+				report_params(url,lat,lon)
+			end
+		elsif params.has_key?("location")
+			coords=params["location"][0].split(",")
+			lat=coords[0]
+			lon=coords[1]
+			report_params(url,lat,lon)
+		end
 	end
 
 	def process_db(db_path)
@@ -274,7 +263,7 @@ class Metasploit3 < Msf::Post
 			print_good("Saving firefox history")
 			urls=save_csv(user_rows,user_info)
 			urls.each do |url|
-                parse_geourl(url)
+			parse_geourl(url)
 			end
 		end
 	end
