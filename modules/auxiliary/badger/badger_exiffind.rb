@@ -4,7 +4,7 @@ require 'rex'
 require 'yaml'
 require 'exifr'
 
-class Metasploit3 < Msf::Post
+class MetasploitModule < Msf::Post
 
 	include Msf::Auxiliary::Badger_Report
 	include Msf::Post::File

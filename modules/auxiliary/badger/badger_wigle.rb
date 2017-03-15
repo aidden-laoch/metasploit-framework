@@ -2,7 +2,7 @@ require 'net/https'
 require 'net/http'
 require 'rex/proto/http/client'    
 
-class Metasploit3 < Msf::Auxiliary
+class MetasploitModule < Msf::Auxiliary
 	
 	include Msf::Auxiliary::Badger_Report
 

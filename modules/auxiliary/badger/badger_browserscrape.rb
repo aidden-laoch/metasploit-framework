@@ -7,7 +7,7 @@ require 'rex'
 require 'csv'
 require 'cgi'
 
-class Metasploit3 < Msf::Post
+class MetasploitModule < Msf::Post
 
 	include Msf::Post::Common
 	include Msf::Post::File

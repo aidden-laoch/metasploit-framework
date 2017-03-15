@@ -2,7 +2,7 @@ require 'msf/core/exploit/pdf'
 require 'msf/core'
 require 'zlib'
 
-class Metasploit3 < Msf::Auxiliary
+class MetasploitModule < Msf::Auxiliary
 	Rank = GoodRanking
 
 	include Msf::Exploit::FILEFORMAT

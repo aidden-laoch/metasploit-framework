@@ -3,7 +3,7 @@ require 'msf/core/post/windows/priv'
 require 'rex'
 require 'rex/proto/http/client'
 
-class Metasploit3 < Msf::Post
+class MetasploitModule < Msf::Post
 	include Msf::Auxiliary::Report
 	include Msf::Auxiliary::Badger_Report
 	include Msf::Post::Windows::Priv
