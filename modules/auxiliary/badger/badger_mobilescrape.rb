@@ -5,7 +5,7 @@ require 'rexml/document'
 require 'rex/parser/apple_backup_manifestdb'
 require 'cfpropertylist'
 
-class Metasploit3 < Msf::Post
+class MetasploitModule < Msf::Post
 
 	include Msf::Post::File
 	include Msf::Auxiliary::Badger_Report

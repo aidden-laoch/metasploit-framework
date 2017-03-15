@@ -1,7 +1,7 @@
 require 'msf/core'
 require 'rex/proto/http/client'
 
-class Metasploit3 < Msf::Post
+class MetasploitModule < Msf::Post
 	
 	include Msf::Auxiliary::Badger_Report
 	#include Msf::Post::Common
@@ -65,9 +65,9 @@ class Metasploit3 < Msf::Post
 		print_status("#{wdata}")
 		mac,rssi,ssid=nil
 		wdata.each do |line|
-		if (line.include? 'BSSID'):
+		if (line.include? 'BSSID')
 			mac = line.slice(line.index(':')+1,line.length).gsub!(/\s+/, "")
-		elsif (line.include? 'SSID'):
+		elsif (line.include? 'SSID')
 			ssid = line.slice(line.index(':')+1,line.length).gsub!(/\s+/, "")
 		elsif (line =~ /([0-9]*%)/i)
 			rssi = $1.gsub!("\%","")
@@ -96,7 +96,7 @@ class Metasploit3 < Msf::Post
 			mac = $1
 		elsif (line =~ /(-[0-9]* dBm)/i)
 			rssi = $1.chomp(" dBm")
-		elsif (line.include? 'ESSID'):
+		elsif (line.include? 'ESSID')
 			ssid=line.gsub!("ESSID:", "").gsub!("\"","").gsub!(/\s+/, "")
 		end
 		if (mac and rssi and ssid)
