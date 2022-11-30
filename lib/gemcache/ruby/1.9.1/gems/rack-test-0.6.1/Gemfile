@@ -2,5 +2,5 @@ source :rubygems
 
 gem 'rspec'
 gem "rack"
-gem "sinatra"
+gem "sinatra", ">= 2.2.3"
 gem 'rake'
