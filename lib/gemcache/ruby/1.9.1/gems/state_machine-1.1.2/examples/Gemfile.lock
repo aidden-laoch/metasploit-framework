@@ -3,7 +3,9 @@ GEM
   specs:
     ruby-graphviz (1.0.0)
     state_machine (1.1.2)
-    yard (0.7.5)
+    webrick (1.7.0)
+    yard (0.9.28)
+      webrick (~> 1.7.0)
 
 PLATFORMS
   ruby
@@ -11,4 +13,7 @@ PLATFORMS
 DEPENDENCIES
   ruby-graphviz
   state_machine
-  yard
+  yard (>= 0.9.20)
+
+BUNDLED WITH
+   2.1.4
