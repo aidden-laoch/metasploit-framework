@@ -1,5 +1,5 @@
 source "http://www.rubygems.org"
 
-gem 'yard'
+gem 'yard', '>= 0.9.35'
 gem 'state_machine'
 gem 'ruby-graphviz'
