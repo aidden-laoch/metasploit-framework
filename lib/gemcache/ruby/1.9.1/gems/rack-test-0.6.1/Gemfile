@@ -1,6 +1,6 @@
 source :rubygems
 
 gem 'rspec'
-gem "rack"
+gem "rack", ">= 2.2.12"
 gem "sinatra"
 gem 'rake'
