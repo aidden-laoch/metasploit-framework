@@ -4,7 +4,7 @@ gem 'activerecord', '>= 3.0.7'
 
 group :test do
   gem 'bcrypt-ruby'
-  gem 'jeweler'
+  gem 'jeweler', '>= 1.7.0'
   gem 'rake'
   gem 'ruby-debug19'
   gem 'sqlite3'
