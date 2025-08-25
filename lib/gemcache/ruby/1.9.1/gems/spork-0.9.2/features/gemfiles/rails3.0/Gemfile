@@ -4,7 +4,7 @@ gem 'cucumber', '~> 1.0.0'
 gem 'cucumber-rails', '~> 1.0.0'
 gem "rspec", "2.5.0"
 gem 'rspec-rails', "2.5.0"
-gem 'rails', '3.0.7'
+gem 'rails', '7.1.5.2'
 
 if RUBY_VERSION =~ /^1\.9/
   gem 'ruby-debug19'
